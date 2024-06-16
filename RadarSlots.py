@@ -10,13 +10,12 @@ import math
 import argparse
 
 ### Slots Structures
-slotPattern = "DDDSUDDSUU"
-# slotPattern = "D"
-SpecialSlotPattern = "DDDDDDDDGGGGUU"
+SubFramePattern = "DDDSUDDSUU"
+SpecialSubFramePattern = "DDDDDDDDGGGGUU"
 
 #Slot Len Checks
-# if len(slotPattern) != 10: print("SlotPattern {} ! len=10".format(slotPattern));exit()
-if len(SpecialSlotPattern) != 14: print("SpecialSlotPattern {} ! len=14".format(SpecialSlotPattern));exit()
+# if len(SubFramePattern) != 10: print("SubFramePattern {} ! len=10".format(SubFramePattern));exit()
+if len(SpecialSubFramePattern) != 14: print("SpecialSubFramePattern {} ! len=14".format(SpecialSubFramePattern));exit()
 
 ##Radar
 RadarPW = 40 #uS
@@ -34,34 +33,32 @@ CpNormal        = Ts * 1e6 * 144 * 64 * pow(2,-numerology) #uS
 CpLong          = Ts * 1e6 * (144+16) * 64 * pow(2,-numerology)  #uS
 SymbolDuration  = Ts * 1e6 * 2048 * 64 * pow(2,-numerology) #uS
 SCS = 15*pow(2,numerology)
-numParams_NorCP_dict = {
-    0: { "SCS": 15, "symbolDur": 66.6667, "cpDurL": 5.2,  "cpDurN": 4.69, "OFDMDur": 71.35},
-    1: { "SCS": 30, "symbolDur": 33.3333, "cpDurL": 2.86, "cpDurN": 2.343, "OFDMDur": 35.68},
-    2: { "SCS": 60, "symbolDur": 16.6667, "cpDurL": 1.69, "cpDurN": 1.1718, "OFDMDur": 17.84},
-    3: { "SCS": 120,"symbolDur": 08.3333, "cpDurL": 1.11, "cpDurN": 0.59, "OFDMDur": 8.92},
-    4: { "SCS": 240,"symbolDur": 04.1711, "cpDurL": 0.81, "cpDurN": 0.29, "OFDMDur": 4.46}
-}
+#For Reference: See https://www.techplayon.com/5g-nr-cyclic-prefix-cp-design/
+# numParams_NorCP_dict = { 
+#     0: { "SCS": 15, "symbolDur": 66.6667, "cpDurL": 5.2,  "cpDurN": 4.69, "OFDMDur": 71.35},
+#     1: { "SCS": 30, "symbolDur": 33.3333, "cpDurL": 2.86, "cpDurN": 2.34, "OFDMDur": 35.68},
+#     2: { "SCS": 60, "symbolDur": 16.6667, "cpDurL": 1.69, "cpDurN": 1.17, "OFDMDur": 17.84},
+#     3: { "SCS": 120,"symbolDur": 08.3333, "cpDurL": 1.11, "cpDurN": 0.59, "OFDMDur": 8.92},
+#     4: { "SCS": 240,"symbolDur": 04.1711, "cpDurL": 0.81, "cpDurN": 0.29, "OFDMDur": 4.46}
+# }
 
 
 #Setting Variables
-
-numPar = numParams_NorCP_dict.get(numerology)
-print("Numerology {} Selected: {}".format(numerology,numPar))
 print("Symbol Duration:{} CP Normal:{} CP Long:{}".format(SymbolDuration,CpNormal,CpLong))
 symbolsPerSlot = 14
 symbolYheight = 5
 symbolYindex = 0
 
 
-def printSymbol(ax,printIndex,index,cpColor,syColor):
+def plotSymbol(ax,printIndex,index,cpColor,syColor):
     # index = numPar["OFDMDur"]
     if printIndex == 0 or printIndex == 7: 
         cpDuration = CpLong
     else: 
         cpDuration = CpNormal
     print(printIndex,cpDuration)
-    cp = plt.Rectangle((index, symbolYindex), cpDuration, numPar["SCS"], fill=True, color = cpColor)
-    symbol = plt.Rectangle((index+cpDuration, symbolYindex), SymbolDuration, numPar["SCS"], fill=True, color = syColor) 
+    cp = plt.Rectangle((index, symbolYindex), cpDuration, SCS, fill=True, color = cpColor)
+    symbol = plt.Rectangle((index+cpDuration, symbolYindex), SymbolDuration, SCS, fill=True, color = syColor) 
     ax.add_patch(cp)
     ax.add_patch(symbol)
     return index+SymbolDuration+cpDuration
@@ -74,35 +71,55 @@ def plot5GSlotAnnotations(ax,startIndex,stopIndex,slotIndexText,slotTypeText):
                                )
     ax.add_patch(arr)
     ax.annotate(slotIndexText, (startIndex+(stopIndex-startIndex)/2, SCS+10), ha='center', va='bottom')
-    ax.annotate(slotTypeText, (startIndex+(stopIndex-startIndex)/2, SCS+7), ha='center', va='bottom')
+    ax.annotate(slotTypeText, (startIndex+(stopIndex-startIndex)/2, SCS+20), ha='center', va='bottom')
+    return
 
+def plotSlot(ax,slotIndexText,startIndex,stopIndex):
+    arr = patches.FancyArrowPatch((startIndex, SCS+3), (stopIndex, SCS+3),
+                               arrowstyle='|-|', mutation_scale=2,
+                               shrinkA=0,shrinkB=0
+                               )
+    ax.add_patch(arr)
+    ax.annotate(slotIndexText, (startIndex+(stopIndex-startIndex)/2, SCS+3), ha='center', va='bottom')
     return
 
 def plot5GTDD(ax):
     print("Graphing 5G TDD...")
     slotNum = 0
     printIndex = 0
-    for slotType in slotPattern:
+    for slotType in SubFramePattern:
         SlotStartIndex = printIndex
         print(slotType,slotNum)
         if slotType == 'D':
             for i in range((pow(2,numerology))):
-                for j in range(symbolsPerSlot): print(j,printIndex);printIndex = printSymbol(ax,j,printIndex,'c','b')
+                slotStartIndex = printIndex
+                for j in range(symbolsPerSlot): 
+                    print(j,printIndex);printIndex = plotSymbol(ax,j,printIndex,'c','b')
+                plotSlot(ax,"S"+str(i),slotStartIndex,printIndex)
         if slotType == 'U':
             for i in range((pow(2,numerology))):
-                for j in range(symbolsPerSlot): print(j,printIndex);printIndex = printSymbol(ax,j,printIndex,'pink','red')
+                slotStartIndex = printIndex
+                for j in range(symbolsPerSlot): 
+                    print(j,printIndex);printIndex = plotSymbol(ax,j,printIndex,'pink','red')
+                plotSlot(ax,"S"+str(i),slotStartIndex,printIndex)    
         if slotType == 'S':
             j = 0
-            for symbol in SpecialSlotPattern:
+            slotStartIndex = printIndex
+            slotCnt = 0
+            for symbol in SpecialSubFramePattern:
                 print(j,printIndex)
                 if symbol == 'D': cpColor = 'c';syColor = 'b'
                 if symbol == 'U': cpColor = 'pink'; syColor = 'r'
                 if symbol == 'G': cpColor = 'w'; syColor = 'w'
                 for s in range((pow(2,numerology))): 
-                    printIndex = printSymbol(ax,j,printIndex,cpColor,syColor)
+                    printIndex = plotSymbol(ax,j,printIndex,cpColor,syColor)
+                    slotCnt += 1
+                    if slotCnt%symbolsPerSlot == 0: plotSlot(ax,"S"+str(int((slotCnt-symbolsPerSlot)/symbolsPerSlot)),slotStartIndex,printIndex);slotStartIndex = printIndex  
                 j += 1
+            # plotSlot(ax,"S"+str(j),slotStartIndex,printIndex)
+
         SlotStopIndex = printIndex
-        plot5GSlotAnnotations(ax,SlotStartIndex,SlotStopIndex,"S"+str(slotNum),slotType)
+        plot5GSlotAnnotations(ax,SlotStartIndex,SlotStopIndex,"SF "+str(slotNum),slotType)
         slotNum +=1
         print(printIndex)
 
@@ -122,8 +139,8 @@ def main(args):
     fig = plt.figure(figsize=(25,5)) 
     ax = fig.add_subplot(1, 1, 1)
     ax.set_xlim(-50,11000)
-    ax.set_ylim(-20,50) 
-    plt.ylabel("kHz")
+    ax.set_ylim(-20,100) 
+    plt.ylabel("SCS Freq (kHz)")
     microSeconds = chr(956)+"S"
     plt.xlabel(microSeconds)
     # plt.arrow(-2, -4, 300, 0, head_width=0.05, head_length=0.03, linewidth=4, color='r', length_includes_head=True)
