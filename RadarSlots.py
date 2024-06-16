@@ -33,6 +33,7 @@ Ts = 1/(480 * 1000 * 4096)
 CpNormal        = Ts * 1e6 * 144 * 64 * pow(2,-numerology) #uS
 CpLong          = Ts * 1e6 * (144+16) * 64 * pow(2,-numerology)  #uS
 SymbolDuration  = Ts * 1e6 * 2048 * 64 * pow(2,-numerology) #uS
+SCS = 15*pow(2,numerology)
 numParams_NorCP_dict = {
     0: { "SCS": 15, "symbolDur": 66.6667, "cpDurL": 5.2,  "cpDurN": 4.69, "OFDMDur": 71.35},
     1: { "SCS": 30, "symbolDur": 33.3333, "cpDurL": 2.86, "cpDurN": 2.343, "OFDMDur": 35.68},
@@ -65,11 +66,24 @@ def printSymbol(ax,printIndex,index,cpColor,syColor):
     ax.add_patch(symbol)
     return index+SymbolDuration+cpDuration
 
+def plot5GSlotAnnotations(ax,startIndex,stopIndex,slotIndexText,slotTypeText):
+    print("Annotation Start:{} Stop:{}".format(startIndex,stopIndex))
+    arr = patches.FancyArrowPatch((startIndex, SCS+10), (stopIndex, SCS+10),
+                               arrowstyle='|-|', mutation_scale=10,
+                               shrinkA=0,shrinkB=0
+                               )
+    ax.add_patch(arr)
+    ax.annotate(slotIndexText, (startIndex+(stopIndex-startIndex)/2, SCS+10), ha='center', va='bottom')
+    ax.annotate(slotTypeText, (startIndex+(stopIndex-startIndex)/2, SCS+7), ha='center', va='bottom')
+
+    return
+
 def plot5GTDD(ax):
     print("Graphing 5G TDD...")
     slotNum = 0
     printIndex = 0
     for slotType in slotPattern:
+        SlotStartIndex = printIndex
         print(slotType,slotNum)
         if slotType == 'D':
             for i in range((pow(2,numerology))):
@@ -87,6 +101,8 @@ def plot5GTDD(ax):
                 for s in range((pow(2,numerology))): 
                     printIndex = printSymbol(ax,j,printIndex,cpColor,syColor)
                 j += 1
+        SlotStopIndex = printIndex
+        plot5GSlotAnnotations(ax,SlotStartIndex,SlotStopIndex,"S"+str(slotNum),slotType)
         slotNum +=1
         print(printIndex)
 
@@ -105,7 +121,7 @@ def main(args):
     # print(RadarPW,args.RadarPW)
     fig = plt.figure(figsize=(25,5)) 
     ax = fig.add_subplot(1, 1, 1)
-    ax.set_xlim(-10,11000)
+    ax.set_xlim(-50,11000)
     ax.set_ylim(-20,50) 
     plt.ylabel("kHz")
     microSeconds = chr(956)+"S"
