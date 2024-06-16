@@ -6,6 +6,7 @@ E.g.
 ### Slots Structures
 slotPattern = "DDDSUDDSUU"
 SpecialSlotPattern = "DDDDDDDDGGGGUU"
+
 ##Radar
 RadarPW = 40 #uS
 RadarPRI_Hz = 640 #Hz
