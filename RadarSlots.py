@@ -27,7 +27,7 @@ cpColor = 'c'
 syColor = 'b'
 
 ## Numerology
-numerology = 1
+numerology = 0
 Ts = 1/(480 * 1000 * 4096)
 CpNormal        = Ts * 1e6 * 144 * 64 * pow(2,-numerology) #uS
 CpLong          = Ts * 1e6 * (144+16) * 64 * pow(2,-numerology)  #uS
@@ -139,7 +139,7 @@ def main(args):
     fig = plt.figure(figsize=(25,5)) 
     ax = fig.add_subplot(1, 1, 1)
     ax.set_xlim(-50,11000)
-    ax.set_ylim(-20,100) 
+    ax.set_ylim(-20,pow(2,numerology)*15+60) 
     plt.ylabel("SCS Freq (kHz)")
     microSeconds = chr(956)+"S"
     plt.xlabel(microSeconds)
