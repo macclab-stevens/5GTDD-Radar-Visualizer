@@ -27,11 +27,11 @@ cpColor = 'c'
 syColor = 'b'
 
 ## Numerology
-numerology = 0
-Ts = 1/(480 * 1000 * 4096)
-CpNormal        = Ts * 1e6 * 144 * 64 * pow(2,-numerology) #uS
-CpLong          = Ts * 1e6 * (144+16) * 64 * pow(2,-numerology)  #uS
-SymbolDuration  = Ts * 1e6 * 2048 * 64 * pow(2,-numerology) #uS
+numerology = 1
+Tc = 1/(480 * 1000 * 4096) #Basic NR time Unit
+CpNormal        = Tc * 1e6 * 144 * 64 * pow(2,-numerology) #uS
+CpLong          = Tc * 1e6 * (144 * 64 * pow(2,-numerology) + 16*64)  #uS
+SymbolDuration  = Tc * 1e6 * 2048 * 64 * pow(2,-numerology) #uS
 SCS = 15*pow(2,numerology)
 #For Reference: See https://www.techplayon.com/5g-nr-cyclic-prefix-cp-design/
 # numParams_NorCP_dict = { 
@@ -62,6 +62,20 @@ def plotSymbol(ax,printIndex,index,cpColor,syColor):
     ax.add_patch(cp)
     ax.add_patch(symbol)
     return index+SymbolDuration+cpDuration
+
+def plotGuardSymbol(ax,printIndex,index,cpColor,syColor):
+    # index = numPar["OFDMDur"]
+    if printIndex == 0 or printIndex == 7: 
+        cpDuration = CpLong
+    else: 
+        cpDuration = CpNormal
+    print(printIndex,cpDuration)
+    guardTime = cpDuration + SymbolDuration
+    cp = plt.Rectangle((index, symbolYindex), guardTime, SCS, fill=False)
+    # symbol = plt.Rectangle((index+cpDuration, symbolYindex), SymbolDuration, SCS, fill=True, color = syColor) 
+    ax.add_patch(cp)
+    # ax.add_patch(symbol)
+    return index+guardTime
 
 def plot5GSlotAnnotations(ax,startIndex,stopIndex,slotIndexText,slotTypeText):
     print("Annotation Start:{} Stop:{}".format(startIndex,stopIndex))
@@ -112,7 +126,8 @@ def plot5GTDD(ax):
                 if symbol == 'U': cpColor = 'pink'; syColor = 'r'
                 if symbol == 'G': cpColor = 'w'; syColor = 'w'
                 for s in range((pow(2,numerology))): 
-                    printIndex = plotSymbol(ax,j,printIndex,cpColor,syColor)
+                    if symbol!= 'G' : printIndex = plotSymbol(ax,j,printIndex,cpColor,syColor)
+                    else: printIndex = plotGuardSymbol(ax,j,printIndex,cpColor,syColor)
                     slotCnt += 1
                     if slotCnt%symbolsPerSlot == 0: plotSlot(ax,"S"+str(int((slotCnt-symbolsPerSlot)/symbolsPerSlot)),slotStartIndex,printIndex);slotStartIndex = printIndex  
                 j += 1
