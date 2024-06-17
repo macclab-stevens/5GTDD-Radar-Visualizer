@@ -30,7 +30,7 @@ syColor = 'b'
 numerology = 1
 Tc = 1/(480 * 1000 * 4096) #Basic NR time Unit
 CpNormal        = Tc * 1e6 * 144 * 64 * pow(2,-numerology) #uS
-CpLong          = Tc * 1e6 * (144 * 64 * pow(2,-numerology) + 16*64)  #uS
+CpLong          = Tc * 1e6 * (144+16) * 64 * pow(2,-numerology)   #uS
 SymbolDuration  = Tc * 1e6 * 2048 * 64 * pow(2,-numerology) #uS
 SCS = 15*pow(2,numerology)
 #For Reference: See https://www.techplayon.com/5g-nr-cyclic-prefix-cp-design/
