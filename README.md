@@ -7,9 +7,13 @@ E.g.
 slotPattern = "DDDSUDDSUU"
 SpecialSlotPattern = "DDDDDDDDGGGGUU"
 
+Numerology
+
 ##Radar
 RadarPW = 40 #uS
 RadarPRI_Hz = 640 #Hz
 ```
-<img width="1433" alt="image" src="https://github.com/macclab-stevens/5GTDD-Radar-Visualizer/assets/163568786/6e680dab-0b12-48ae-9456-b351ab35b487">
+<img width="1422" alt="image" src="https://github.com/macclab-stevens/5GTDD-Radar-Visualizer/assets/163568786/a42792e9-1c00-44fe-9917-eb52d0e8dcd7">
+
+
 
