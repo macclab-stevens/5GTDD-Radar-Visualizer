@@ -21,6 +21,7 @@ if len(SpecialSubFramePattern) != 14: print("SpecialSubFramePattern {} ! len=14"
 RadarPW = 40 #uS
 RadarPRI_Hz = 640 #Hz
 RadarPRI_s = (1/RadarPRI_Hz )*1e6
+RadarOffset = 500#uS
 
 ### Colors
 cpColor = 'c'
@@ -140,7 +141,7 @@ def plot5GTDD(ax):
 
 def plotPulseRadar(ax,RadarHeight,RadarColor):
     print("Graphing Radar Pulses...")
-    Index = 0
+    Index = 0 + RadarOffset
     RadarGraphRange = 10000
     while Index < RadarGraphRange:
         Pulse = plt.Rectangle((Index, -20), RadarPW, RadarHeight, fill=True, color = RadarColor) 
@@ -161,8 +162,8 @@ def addLegend(ax):
     SpecialSymbol = patches.Patch(color='white',label = ('Special Ptrn  : '+SpecialSubFramePattern))
     RadarPulseWidth = patches.Patch(color='white',label =        ('Radar PW  : '+str(RadarPW) +" "+ chr(956)+"S"))
     RadarPulseWithInterval = patches.Patch(color='white',label = ('Radar PRI  : '+str(RadarPRI_Hz)+" Hz"))
-
-    ax.legend(handles=[SFAllocation,SpecialSymbol,RadarPulseWidth,RadarPulseWithInterval],loc='upper left')
+    RadarOffsetLgnd = patches.Patch(color='white',label =        ('Radar Offset: '+str(RadarOffset)+" "+chr(956)+"S"))
+    ax.legend(handles=[SFAllocation,SpecialSymbol,RadarPulseWidth,RadarPulseWithInterval,RadarOffsetLgnd],loc='upper left')
     return
 
 def main(args):
