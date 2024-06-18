@@ -148,12 +148,29 @@ def plotPulseRadar(ax,RadarHeight,RadarColor):
         Index += RadarPW + RadarPRI_s
         # if Index > RadarGraphRange: return
 
+def addLegend(ax):
+    #first legend
+    Downlink = patches.Patch(color='blue', label='Downlink')
+    Uplink = patches.Patch(color='red',label='Uplink')
+    Guard = patches.Patch(color='black',fill=None,label='Guard')
+    Radar = patches.Patch(color='green',label='Radar Pulse')
+    ax.add_artist(ax.legend(handles=[Downlink,Uplink,Guard,Radar], loc='upper right'))
+
+    #second legend
+    SFAllocation = patches.Patch(color='white',label =  ('SF Allocation: '+SubFramePattern))
+    SpecialSymbol = patches.Patch(color='white',label = ('Special Ptrn  : '+SpecialSubFramePattern))
+    RadarPulseWidth = patches.Patch(color='white',label =        ('Radar PW  : '+str(RadarPW) +" "+ chr(956)+"S"))
+    RadarPulseWithInterval = patches.Patch(color='white',label = ('Radar PRI  : '+str(RadarPRI_Hz)+" Hz"))
+
+    ax.legend(handles=[SFAllocation,SpecialSymbol,RadarPulseWidth,RadarPulseWithInterval],loc='upper left')
+    return
+
 def main(args):
     # RadarPW = args.RadarPW
     # print(RadarPW,args.RadarPW)
     fig = plt.figure(figsize=(25,5)) 
     ax = fig.add_subplot(1, 1, 1)
-    ax.set_xlim(-50,11000)
+    ax.set_xlim(-50,10100)
     ax.set_ylim(-20,pow(2,numerology)*15+60) 
     plt.ylabel("SCS Freq (kHz)")
     microSeconds = chr(956)+"S"
@@ -162,6 +179,7 @@ def main(args):
     plot5GTDD(ax)
     plotPulseRadar(ax,10,'g')
     print("Showing Plot")
+    addLegend(ax)
     plt.show()  
 
 if __name__ == "__main__":
