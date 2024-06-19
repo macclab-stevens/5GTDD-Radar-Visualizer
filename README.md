@@ -13,7 +13,7 @@ Numerology
 RadarPW = 40 #uS
 RadarPRI_Hz = 640 #Hz
 ```
-<img width="1423" alt="image" src="https://github.com/macclab-stevens/5GTDD-Radar-Visualizer/assets/163568786/46ca7d3c-e72c-4ffe-955b-12dfd5d75c7d">
+<img width="1423" alt="image" src="image.png">
 
 
 
