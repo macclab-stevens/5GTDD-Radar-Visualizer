@@ -11,11 +11,15 @@ import argparse
 
 ### Slots Structures
 SubFramePattern = "DDDSUDDSUU"
-SpecialSubFramePattern = "DDDDDDDDGGGGUU"
+SpecialSubFramePattern = "DDDDDDDDGGUUUU"
 
 #Slot Len Checks
-# if len(SubFramePattern) != 10: print("SubFramePattern {} ! len=10".format(SubFramePattern));exit()
+if len(SubFramePattern) != 10: print("SubFramePattern {} ! len=10".format(SubFramePattern));exit()
 if len(SpecialSubFramePattern) != 14: print("SpecialSubFramePattern {} ! len=14".format(SpecialSubFramePattern));exit()
+
+#UE
+UeDistance = 15e3 #(m)
+UePropDelay = 1e6 * 30e3/(3e8) #us
 
 ##Radar
 RadarPW = 40 #uS
@@ -48,23 +52,23 @@ SCS = 15*pow(2,numerology)
 print("Symbol Duration:{} CP Normal:{} CP Long:{}".format(SymbolDuration,CpNormal,CpLong))
 symbolsPerSlot = 14
 symbolYheight = 5
-symbolYindex = 0
+#symbolYindex = 0
 
 
-def plotSymbol(ax,printIndex,index,cpColor,syColor):
+def plotSymbol(ax,printIndex,index,Yindex,cpColor,syColor):
     # index = numPar["OFDMDur"]
     if printIndex == 0 or printIndex == 7: 
         cpDuration = CpLong
     else: 
         cpDuration = CpNormal
     print(printIndex,cpDuration)
-    cp = plt.Rectangle((index, symbolYindex), cpDuration, SCS, fill=True, color = cpColor)
-    symbol = plt.Rectangle((index+cpDuration, symbolYindex), SymbolDuration, SCS, fill=True, color = syColor) 
+    cp = plt.Rectangle((index, Yindex), cpDuration, SCS, fill=True, color = cpColor)
+    symbol = plt.Rectangle((index+cpDuration, Yindex), SymbolDuration, SCS, fill=True, color = syColor) 
     ax.add_patch(cp)
     ax.add_patch(symbol)
     return index+SymbolDuration+cpDuration
 
-def plotGuardSymbol(ax,printIndex,index,cpColor,syColor):
+def plotGuardSymbol(ax,printIndex,index,Yindex,cpColor,syColor):
     # index = numPar["OFDMDur"]
     if printIndex == 0 or printIndex == 7: 
         cpDuration = CpLong
@@ -72,7 +76,7 @@ def plotGuardSymbol(ax,printIndex,index,cpColor,syColor):
         cpDuration = CpNormal
     print(printIndex,cpDuration)
     guardTime = cpDuration + SymbolDuration
-    cp = plt.Rectangle((index, symbolYindex), guardTime, SCS, fill=False)
+    cp = plt.Rectangle((index, Yindex), guardTime, SCS, fill=False)
     # symbol = plt.Rectangle((index+cpDuration, symbolYindex), SymbolDuration, SCS, fill=True, color = syColor) 
     ax.add_patch(cp)
     # ax.add_patch(symbol)
@@ -98,10 +102,10 @@ def plotSlot(ax,slotIndexText,startIndex,stopIndex):
     ax.annotate(slotIndexText, (startIndex+(stopIndex-startIndex)/2, SCS+3), ha='center', va='bottom')
     return
 
-def plot5GTDD(ax):
+def plot5GTDD(ax,xaxisOffset,yaxisOffset,bool_plotSlot):
     print("Graphing 5G TDD...")
     slotNum = 0
-    printIndex = 0
+    printIndex = xaxisOffset
     for slotType in SubFramePattern:
         SlotStartIndex = printIndex
         print(slotType,slotNum)
@@ -109,14 +113,14 @@ def plot5GTDD(ax):
             for i in range((pow(2,numerology))):
                 slotStartIndex = printIndex
                 for j in range(symbolsPerSlot): 
-                    print(j,printIndex);printIndex = plotSymbol(ax,j,printIndex,'c','b')
-                plotSlot(ax,"S"+str(i),slotStartIndex,printIndex)
+                    print(j,printIndex);printIndex = plotSymbol(ax,j,printIndex,yaxisOffset,'c','b')
+                if(bool_plotSlot):plotSlot(ax,"S"+str(i),slotStartIndex,printIndex)
         if slotType == 'U':
             for i in range((pow(2,numerology))):
                 slotStartIndex = printIndex
                 for j in range(symbolsPerSlot): 
-                    print(j,printIndex);printIndex = plotSymbol(ax,j,printIndex,'pink','red')
-                plotSlot(ax,"S"+str(i),slotStartIndex,printIndex)    
+                    print(j,printIndex);printIndex = plotSymbol(ax,j,printIndex,yaxisOffset,'pink','red')
+                if(bool_plotSlot):plotSlot(ax,"S"+str(i),slotStartIndex,printIndex)    
         if slotType == 'S':
             j = 0
             slotStartIndex = printIndex
@@ -127,35 +131,38 @@ def plot5GTDD(ax):
                 if symbol == 'U': cpColor = 'pink'; syColor = 'r'
                 if symbol == 'G': cpColor = 'w'; syColor = 'w'
                 for s in range((pow(2,numerology))): 
-                    if symbol!= 'G' : printIndex = plotSymbol(ax,j,printIndex,cpColor,syColor)
-                    else: printIndex = plotGuardSymbol(ax,j,printIndex,cpColor,syColor)
+                    if symbol!= 'G' : printIndex = plotSymbol(ax,j,printIndex,yaxisOffset,cpColor,syColor)
+                    else: printIndex = plotGuardSymbol(ax,j,printIndex,yaxisOffset,cpColor,syColor)
                     slotCnt += 1
-                    if slotCnt%symbolsPerSlot == 0: plotSlot(ax,"S"+str(int((slotCnt-symbolsPerSlot)/symbolsPerSlot)),slotStartIndex,printIndex);slotStartIndex = printIndex  
+                    if slotCnt%symbolsPerSlot == 0: 
+                        if(bool_plotSlot):plotSlot(ax,"S"+str(int((slotCnt-symbolsPerSlot)/symbolsPerSlot)),slotStartIndex,printIndex);
+                        slotStartIndex = printIndex  
                 j += 1
             # plotSlot(ax,"S"+str(j),slotStartIndex,printIndex)
 
         SlotStopIndex = printIndex
-        plot5GSlotAnnotations(ax,SlotStartIndex,SlotStopIndex,"SF "+str(slotNum),slotType)
+        if(bool_plotSlot):plot5GSlotAnnotations(ax,SlotStartIndex,SlotStopIndex,"SF "+str(slotNum),slotType)
         slotNum +=1
         print(printIndex)
 
-def plotPulseRadar(ax,RadarHeight,RadarColor):
+def plotPulseRadar(ax,Yindex,RadarHeight,RadarColor):
     print("Graphing Radar Pulses...")
     Index = 0 + RadarOffset
     RadarGraphRange = 10000
     while Index < RadarGraphRange:
-        Pulse = plt.Rectangle((Index, -20), RadarPW, RadarHeight, fill=True, color = RadarColor) 
+        Pulse = plt.Rectangle((Index, Yindex), RadarPW, RadarHeight, fill=True, color = RadarColor) 
         ax.add_patch(Pulse)
         Index += RadarPW + RadarPRI_s
         # if Index > RadarGraphRange: return
 
 def addLegend(ax):
+    textSize = 5
     #first legend
     Downlink = patches.Patch(color='blue', label='Downlink')
     Uplink = patches.Patch(color='red',label='Uplink')
     Guard = patches.Patch(color='black',fill=None,label='Guard')
     Radar = patches.Patch(color='green',label='Radar Pulse')
-    ax.add_artist(ax.legend(handles=[Downlink,Uplink,Guard,Radar], loc='upper right'))
+    ax.add_artist(ax.legend(handles=[Downlink,Uplink,Guard,Radar], loc='upper right',fontsize=textSize))
 
     #second legend
     SFAllocation = patches.Patch(color='white',label =  ('SF Allocation: '+SubFramePattern))
@@ -163,7 +170,7 @@ def addLegend(ax):
     RadarPulseWidth = patches.Patch(color='white',label =        ('Radar PW  : '+str(RadarPW) +" "+ chr(956)+"S"))
     RadarPulseWithInterval = patches.Patch(color='white',label = ('Radar PRI  : '+str(RadarPRI_Hz)+" Hz"))
     RadarOffsetLgnd = patches.Patch(color='white',label =        ('Radar Offset: '+str(RadarOffset)+" "+chr(956)+"S"))
-    ax.legend(handles=[SFAllocation,SpecialSymbol,RadarPulseWidth,RadarPulseWithInterval,RadarOffsetLgnd],loc='upper left')
+    ax.legend(handles=[SFAllocation,SpecialSymbol,RadarPulseWidth,RadarPulseWithInterval,RadarOffsetLgnd],loc='upper left',fontsize=textSize)
     return
 
 def main(args):
@@ -171,14 +178,15 @@ def main(args):
     # print(RadarPW,args.RadarPW)
     fig = plt.figure(figsize=(25,5)) 
     ax = fig.add_subplot(1, 1, 1)
-    ax.set_xlim(-50,10100)
-    ax.set_ylim(-20,pow(2,numerology)*15+60) 
+    ax.set_xlim(-50,10200)
+    ax.set_ylim(-70,pow(2,numerology)*15+60) 
     plt.ylabel("SCS Freq (kHz)")
     microSeconds = chr(956)+"S"
     plt.xlabel(microSeconds)
     # plt.arrow(-2, -4, 300, 0, head_width=0.05, head_length=0.03, linewidth=4, color='r', length_includes_head=True)
-    plot5GTDD(ax)
-    plotPulseRadar(ax,10,'g')
+    plot5GTDD(ax,0,0,True)
+    plot5GTDD(ax,UePropDelay,- (15*pow(2,numerology) + 10),False)
+    plotPulseRadar(ax,-60,10,'g')
     print("Showing Plot")
     addLegend(ax)
     plt.show()  
