@@ -20,8 +20,9 @@ if len(SubFramePattern) != 10: print("SubFramePattern {} ! len=10".format(SubFra
 if len(SpecialSubFramePattern) != 14: print("SpecialSubFramePattern {} ! len=14".format(SpecialSubFramePattern));exit()
 
 #UE
-UeDistance = 5e3 #(m)
-UePropDelay = 1e6 * 30e3/(3e8) #us
+UeDistance = 15e3 # (m)
+SpeedOfLight = 299792458 # (m/s)
+UePropDelay = 1e6 * UeDistance/(SpeedOfLight) # (us)
 
 ##Radar
 RadarPW = 40 #uS
@@ -147,10 +148,10 @@ def plot5GTDD(ax,xaxisOffset,yaxisOffset,bool_plotSlot):
         slotNum +=1
         print(printIndex)
 
-def plotPictures(ax,name,xloc,yloc):
+def plotPictures(ax,name,x0,x1,y0,y1):
     image = mpimg.imread(name)
-    extent = [1,300,2,400]
-    ax.imshow(image, extent=extent, interpolation='none')
+    extent = [x0,x1,y0,y1]
+    ax.imshow(image, extent=extent, interpolation='none', aspect='auto')
     return
 
 def plotPulseRadar(ax,Yindex,RadarHeight,RadarColor):
@@ -178,7 +179,13 @@ def addLegend(ax):
     RadarPulseWidth = patches.Patch(color='white',label =        ('Radar PW  : '+str(RadarPW) +" "+ chr(956)+"S"))
     RadarPulseWithInterval = patches.Patch(color='white',label = ('Radar PRI  : '+str(RadarPRI_Hz)+" Hz"))
     RadarOffsetLgnd = patches.Patch(color='white',label =        ('Radar Offset: '+str(RadarOffset)+" "+chr(956)+"S"))
-    ax.legend(handles=[SFAllocation,SpecialSymbol,RadarPulseWidth,RadarPulseWithInterval,RadarOffsetLgnd],loc='upper left',fontsize=textSize)
+    ax.add_artist(ax.legend(handles=[SFAllocation,SpecialSymbol,RadarPulseWidth,RadarPulseWithInterval,RadarOffsetLgnd],loc='upper left',fontsize=textSize) )
+
+    #third Legend
+    UeDistanceLgnd = patches.Patch(color='white',label =  ('UE Distance: '+str(UeDistance/1e3) + "km"))
+    UePropDelayLgnd = patches.Patch(color='white',label = ('UE PropDelay: '+str(int(UePropDelay)) + chr(956)+"S"))
+    ax.legend(handles=[UeDistanceLgnd,UePropDelayLgnd],loc='lower left',fontsize=textSize)
+
     return
 
 def main(args):
@@ -193,7 +200,9 @@ def main(args):
     plot5GTDD(ax,0,0,True)
     plot5GTDD(ax,UePropDelay,- (15*pow(2,numerology) + 10),False)
     plotPulseRadar(ax,-60,10,'g')
-    # plotPictures(ax,'UE.jpg',0,0)
+    plotPictures(ax,'Tower.jpg',-400,-50,5,25)
+    plotPictures(ax,'Ue.jpg',-350,-50,-35,-20)
+
     addLegend(ax)
     print("Showing Plot")
     plt.show()  
