@@ -23,6 +23,7 @@ if len(SpecialSubFramePattern) != 14: print("SpecialSubFramePattern {} ! len=14"
 UeDistance = 15e3 # (m)
 SpeedOfLight = 299792458 # (m/s)
 UePropDelay = 1e6 * UeDistance/(SpeedOfLight) # (us)
+UeTimingAdvance = True
 
 ##Radar
 RadarPW = 40 #uS
@@ -96,7 +97,7 @@ def plot5GSlotAnnotations(ax,startIndex,stopIndex,slotIndexText,slotTypeText):
     ax.annotate(slotTypeText, (startIndex+(stopIndex-startIndex)/2, SCS+20), ha='center', va='bottom')
     return
 
-def plotSlot(ax,slotIndexText,startIndex,stopIndex):
+def plotSlotAnnotations(ax,slotIndexText,startIndex,stopIndex):
     arr = patches.FancyArrowPatch((startIndex, SCS+3), (stopIndex, SCS+3),
                                arrowstyle='|-|', mutation_scale=2,
                                shrinkA=0,shrinkB=0
@@ -105,11 +106,12 @@ def plotSlot(ax,slotIndexText,startIndex,stopIndex):
     ax.annotate(slotIndexText, (startIndex+(stopIndex-startIndex)/2, SCS+3), ha='center', va='bottom')
     return
 
-def plot5GTDD(ax,xaxisOffset,yaxisOffset,bool_plotSlot):
+def plot5GTDD(ax,xaxisOffset,yaxisOffset,bool_plotSlot,bool_ta):
     print("Graphing 5G TDD...")
     slotNum = 0
     printIndex = xaxisOffset
-    for slotType in SubFramePattern:
+    for subFrameIndex in range(len(SubFramePattern)):
+        slotType = SubFramePattern[subFrameIndex]
         SlotStartIndex = printIndex
         print(slotType,slotNum)
         if slotType == 'D':
@@ -117,28 +119,34 @@ def plot5GTDD(ax,xaxisOffset,yaxisOffset,bool_plotSlot):
                 slotStartIndex = printIndex
                 for j in range(symbolsPerSlot): 
                     print(j,printIndex);printIndex = plotSymbol(ax,j,printIndex,yaxisOffset,'c','b')
-                if(bool_plotSlot):plotSlot(ax,"S"+str(i),slotStartIndex,printIndex)
+                if(bool_plotSlot):plotSlotAnnotations(ax,"S"+str(i),slotStartIndex,printIndex)
         if slotType == 'U':
             for i in range((pow(2,numerology))):
                 slotStartIndex = printIndex
                 for j in range(symbolsPerSlot): 
                     print(j,printIndex);printIndex = plotSymbol(ax,j,printIndex,yaxisOffset,'pink','red')
-                if(bool_plotSlot):plotSlot(ax,"S"+str(i),slotStartIndex,printIndex)    
+                if(bool_plotSlot):plotSlotAnnotations(ax,"S"+str(i),slotStartIndex,printIndex)    
+            if bool_ta and subFrameIndex<len(SubFramePattern)-1:
+                print(subFrameIndex,len(SubFramePattern))
+                if (SubFramePattern[subFrameIndex+1] != 'U'): printIndex += 2*UePropDelay
         if slotType == 'S':
             j = 0
             slotStartIndex = printIndex
             slotCnt = 0
+            appliedTA = False
             for symbol in SpecialSubFramePattern:
                 print(j,printIndex)
                 if symbol == 'D': cpColor = 'c';syColor = 'b'
-                if symbol == 'U': cpColor = 'pink'; syColor = 'r'
+                if symbol == 'U': 
+                    if bool_ta and not appliedTA: printIndex -= 2*UePropDelay; appliedTA = True
+                    cpColor = 'pink'; syColor = 'r' 
                 if symbol == 'G': cpColor = 'w'; syColor = 'w'
                 for s in range((pow(2,numerology))): 
                     if symbol!= 'G' : printIndex = plotSymbol(ax,j,printIndex,yaxisOffset,cpColor,syColor)
                     else: printIndex = plotGuardSymbol(ax,j,printIndex,yaxisOffset,cpColor,syColor)
                     slotCnt += 1
                     if slotCnt%symbolsPerSlot == 0: 
-                        if(bool_plotSlot):plotSlot(ax,"S"+str(int((slotCnt-symbolsPerSlot)/symbolsPerSlot)),slotStartIndex,printIndex);
+                        if(bool_plotSlot):plotSlotAnnotations(ax,"S"+str(int((slotCnt-symbolsPerSlot)/symbolsPerSlot)),slotStartIndex,printIndex);
                         slotStartIndex = printIndex  
                 j += 1
             # plotSlot(ax,"S"+str(j),slotStartIndex,printIndex)
@@ -197,8 +205,8 @@ def main(args):
     ax.set_ylim(-70,pow(2,numerology)*15+60) 
     plt.ylabel("SCS Freq (kHz)")
     plt.xlabel(chr(956)+"S")
-    plot5GTDD(ax,0,0,True)
-    plot5GTDD(ax,UePropDelay,- (15*pow(2,numerology) + 10),False)
+    plot5GTDD(ax,0,0,True,False)
+    plot5GTDD(ax,UePropDelay,- (15*pow(2,numerology) + 10),False,True)
     plotPulseRadar(ax,-60,10,'g')
     plotPictures(ax,'Tower.jpg',-400,-50,5,25)
     plotPictures(ax,'Ue.jpg',-350,-50,-35,-20)
