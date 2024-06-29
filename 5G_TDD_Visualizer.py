@@ -208,8 +208,8 @@ def main(args):
     plot5GTDD(ax,0,0,True,False)
     plot5GTDD(ax,UePropDelay,- (15*pow(2,numerology) + 10),False,True)
     plotPulseRadar(ax,-60,10,'g')
-    plotPictures(ax,'Tower.jpg',-400,-50,5,25)
-    plotPictures(ax,'Ue.jpg',-350,-50,-35,-20)
+    plotPictures(ax,'Images/Tower.jpg',-400,-50,5,25)
+    plotPictures(ax,'Images/Ue.jpg',-350,-50,-35,-20)
 
     addLegend(ax)
     print("Showing Plot")
