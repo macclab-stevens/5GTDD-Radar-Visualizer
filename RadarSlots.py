@@ -4,28 +4,30 @@ __author__ = "Eric Forbes"
 __version__ = "0.1.0"
 __license__ = "MIT"
 import matplotlib
+import matplotlib.image as mpimg
 import matplotlib.pyplot as plt 
 import matplotlib.patches as patches
+import matplotlib.cbook as cbook
 import math
 import argparse
 
 ### Slots Structures
 SubFramePattern = "DDDSUDDSUU"
-SpecialSubFramePattern = "DDDDDDDDGGUUUU"
+SpecialSubFramePattern = "DDDDDDGGGGUUUU"
 
 #Slot Len Checks
 if len(SubFramePattern) != 10: print("SubFramePattern {} ! len=10".format(SubFramePattern));exit()
 if len(SpecialSubFramePattern) != 14: print("SpecialSubFramePattern {} ! len=14".format(SpecialSubFramePattern));exit()
 
 #UE
-UeDistance = 15e3 #(m)
+UeDistance = 5e3 #(m)
 UePropDelay = 1e6 * 30e3/(3e8) #us
 
 ##Radar
 RadarPW = 40 #uS
 RadarPRI_Hz = 640 #Hz
 RadarPRI_s = (1/RadarPRI_Hz )*1e6
-RadarOffset = 500#uS
+RadarOffset = 400#uS
 
 ### Colors
 cpColor = 'c'
@@ -35,7 +37,7 @@ syColor = 'b'
 numerology = 1
 Tc = 1/(480 * 1000 * 4096) #Basic NR time Unit
 CpNormal        = Tc * 1e6 * 144 * 64 * pow(2,-numerology) #uS
-CpLong          = Tc * 1e6 * (144+16) * 64 * pow(2,-numerology)   #uS
+CpLong          = Tc * 1e6 * (144+16) * 64 * pow(2,-numerology)   #uS 
 SymbolDuration  = Tc * 1e6 * 2048 * 64 * pow(2,-numerology) #uS
 SCS = 15*pow(2,numerology)
 #For Reference: See https://www.techplayon.com/5g-nr-cyclic-prefix-cp-design/
@@ -145,6 +147,12 @@ def plot5GTDD(ax,xaxisOffset,yaxisOffset,bool_plotSlot):
         slotNum +=1
         print(printIndex)
 
+def plotPictures(ax,name,xloc,yloc):
+    image = mpimg.imread(name)
+    extent = [1,300,2,400]
+    ax.imshow(image, extent=extent, interpolation='none')
+    return
+
 def plotPulseRadar(ax,Yindex,RadarHeight,RadarColor):
     print("Graphing Radar Pulses...")
     Index = 0 + RadarOffset
@@ -178,17 +186,16 @@ def main(args):
     # print(RadarPW,args.RadarPW)
     fig = plt.figure(figsize=(25,5)) 
     ax = fig.add_subplot(1, 1, 1)
-    ax.set_xlim(-50,10200)
+    ax.set_xlim(-500,10200)
     ax.set_ylim(-70,pow(2,numerology)*15+60) 
     plt.ylabel("SCS Freq (kHz)")
-    microSeconds = chr(956)+"S"
-    plt.xlabel(microSeconds)
-    # plt.arrow(-2, -4, 300, 0, head_width=0.05, head_length=0.03, linewidth=4, color='r', length_includes_head=True)
+    plt.xlabel(chr(956)+"S")
     plot5GTDD(ax,0,0,True)
     plot5GTDD(ax,UePropDelay,- (15*pow(2,numerology) + 10),False)
     plotPulseRadar(ax,-60,10,'g')
-    print("Showing Plot")
+    # plotPictures(ax,'UE.jpg',0,0)
     addLegend(ax)
+    print("Showing Plot")
     plt.show()  
 
 if __name__ == "__main__":

@@ -13,7 +13,7 @@ Numerology
 RadarPW = 40 #uS
 RadarPRI_Hz = 640 #Hz
 ```
-<img width="1423" alt="image" src="image.png">
+<img width="1423" alt="image" src="ExampleOutput.png">
 
 
 
