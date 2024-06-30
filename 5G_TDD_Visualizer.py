@@ -24,6 +24,7 @@ UeDistance = 15e3 # (m)
 SpeedOfLight = 299792458 # (m/s)
 UePropDelay = 1e6 * UeDistance/(SpeedOfLight) # (us)
 UeTimingAdvance = True
+plotTaAnnotations = True
 
 ##Radar
 RadarPW = 40 #uS
@@ -106,6 +107,22 @@ def plotSlotAnnotations(ax,slotIndexText,startIndex,stopIndex):
     ax.annotate(slotIndexText, (startIndex+(stopIndex-startIndex)/2, SCS+3), ha='center', va='bottom')
     return
 
+def plotTimingAdvanceAnnotations(ax,xstart,xstop,yindex):
+    if not plotTaAnnotations: return
+    arr = patches.FancyArrowPatch((xstart, yindex), (xstop, yindex),
+                               arrowstyle='|-|', mutation_scale=2,
+                               shrinkA=0,shrinkB=0
+                               )
+    ax.add_patch(arr)
+    ax.annotate('', (xstart+(xstop-xstart)/2, yindex), ha='right', va='bottom')
+    ax.annotate('TA', (xstop + 10, yindex-1))
+
+    return
+
+def plotPropDelayAnnotations(ax,start,stop):
+
+    return
+
 def plot5GTDD(ax,xaxisOffset,yaxisOffset,bool_plotSlot,bool_ta):
     print("Graphing 5G TDD...")
     slotNum = 0
@@ -128,7 +145,8 @@ def plot5GTDD(ax,xaxisOffset,yaxisOffset,bool_plotSlot,bool_ta):
                 if(bool_plotSlot):plotSlotAnnotations(ax,"S"+str(i),slotStartIndex,printIndex)    
             if bool_ta and subFrameIndex<len(SubFramePattern)-1:
                 print(subFrameIndex,len(SubFramePattern))
-                if (SubFramePattern[subFrameIndex+1] != 'U'): printIndex += 2*UePropDelay
+                if (SubFramePattern[subFrameIndex+1] != 'U'): 
+                    printIndex += 2*UePropDelay
         if slotType == 'S':
             j = 0
             slotStartIndex = printIndex
@@ -138,7 +156,7 @@ def plot5GTDD(ax,xaxisOffset,yaxisOffset,bool_plotSlot,bool_ta):
                 print(j,printIndex)
                 if symbol == 'D': cpColor = 'c';syColor = 'b'
                 if symbol == 'U': 
-                    if bool_ta and not appliedTA: printIndex -= 2*UePropDelay; appliedTA = True
+                    if bool_ta and not appliedTA: printIndex -= 2*UePropDelay; appliedTA = True; plotTimingAdvanceAnnotations(ax,printIndex,printIndex+UePropDelay,-5)
                     cpColor = 'pink'; syColor = 'r' 
                 if symbol == 'G': cpColor = 'w'; syColor = 'w'
                 for s in range((pow(2,numerology))): 
