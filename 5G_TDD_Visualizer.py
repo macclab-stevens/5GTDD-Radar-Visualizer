@@ -206,13 +206,15 @@ def main(args):
     plot5GTDD(ax,0,0,True,False)
     plot5GTDD(ax,UePropDelay,- (15*pow(2,numerology) + 10),False,True)
     plotPulseRadar(ax,-60,10,'g')
-    plotPictures(ax,'Images/Tower.jpg',-400,-50,5,25)
-    plotPictures(ax,'Images/Ue.jpg',-350,-50,-35,-20)
+    if showImages:
+        plotPictures(ax,'Images/Tower.jpg',-400,-50,5,25)
+        plotPictures(ax,'Images/Ue.jpg',-350,-50,-35,-20)
 
     addLegend(ax)
-    print("Showing Plot")
+    if FileName is None: print("Showing Plot"); plt.show() 
+    else: print("Saving plt as: {}".format(FileName));plt.savefig(FileName)
     
-    plt.show()      
+         
 
 if __name__ == "__main__":
     """ This is executed when run from the command line """
@@ -223,8 +225,6 @@ if __name__ == "__main__":
     # Required positional argument
     # parser.add_argument("arg", help="Required positional argument")
 
-    # Optional argument flag which defaults to False
-    parser.add_argument("-f", "--flag", action="store_true", default=False)
 
     # Optional argument which requires a parameter (eg. -d test)
     # parser.add_argument("--RadarPW", action="store", default=40, type=int, help="Radar Pulse Width in uS")
@@ -255,8 +255,8 @@ if __name__ == "__main__":
     parser.add_argument('--RadarPW',type=int,default=40,help="Radar Pulse Width in uS")
     parser.add_argument('--RadarPRI',type=int,default=640,help="Radar Pulse Repeition Interval in Hz")
     parser.add_argument('--RadarOffset',type=int,default=0,help='Radar StartTime Offset')
-
-
+    parser.add_argument('-f','--fileName',required=False,type=str,help='File to Write PlotOutput')
+    parser.add_argument('-i','--noImages',default=True,action='store_false',help='If displaying UE/Tower Images')
     args = parser.parse_args()
     ### Slots Structures
     SubFramePattern = args.subFramePattern
@@ -279,10 +279,16 @@ if __name__ == "__main__":
     RadarPRI_Hz = args.RadarPRI #Hz
     RadarPRI_s = (1/RadarPRI_Hz )*1e6
     RadarOffset = args.RadarOffset #uS
+
+    #plot related
+    FileName = args.fileName
+    showImages = args.noImages
+    #Print What we're using
     print("Using the Following: ")
     print("Slot Pattern: {} SpecialPattern {}".format(SubFramePattern,SpecialSubFramePattern))
     print("Ue Distance From gNB {} , PropDelay:{} with TA: {}".format(UeDistance,UePropDelay,UeTimingAdvance))
     print("Radar PW:{} PRI:{} Offset{}".format(RadarPW,RadarPRI_Hz,RadarOffset))
-    
+    print("FileName: {}".format(FileName))
+
     main(args)
 
