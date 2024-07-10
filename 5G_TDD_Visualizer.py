@@ -11,27 +11,6 @@ import matplotlib.cbook as cbook
 import math
 import argparse
 
-### Slots Structures
-SubFramePattern = "DDDSUDDSUU"
-SpecialSubFramePattern = "DDDDDDGGGGUUUU"
-
-#Slot Len Checks
-if len(SubFramePattern) != 10: print("SubFramePattern {} ! len=10".format(SubFramePattern));exit()
-if len(SpecialSubFramePattern) != 14: print("SpecialSubFramePattern {} ! len=14".format(SpecialSubFramePattern));exit()
-
-#UE
-UeDistance = 15e3 # (m)
-SpeedOfLight = 299792458 # (m/s)
-UePropDelay = 1e6 * UeDistance/(SpeedOfLight) # (us)
-UeTimingAdvance = True
-plotTaAnnotations = True
-
-##Radar
-RadarPW = 40 #uS
-RadarPRI_Hz = 640 #Hz
-RadarPRI_s = (1/RadarPRI_Hz )*1e6
-RadarOffset = 400#uS
-
 ### Colors
 cpColor = 'c'
 syColor = 'b'
@@ -54,7 +33,7 @@ SCS = 15*pow(2,numerology)
 
 
 #Setting Variables
-print("Symbol Duration:{} CP Normal:{} CP Long:{}".format(SymbolDuration,CpNormal,CpLong))
+# print("Symbol Duration:{} CP Normal:{} CP Long:{}".format(SymbolDuration,CpNormal,CpLong))
 symbolsPerSlot = 14
 symbolYheight = 5
 #symbolYindex = 0
@@ -66,7 +45,7 @@ def plotSymbol(ax,printIndex,index,Yindex,cpColor,syColor):
         cpDuration = CpLong
     else: 
         cpDuration = CpNormal
-    print(printIndex,cpDuration)
+    # print(printIndex,cpDuration)
     cp = plt.Rectangle((index, Yindex), cpDuration, SCS, fill=True, color = cpColor)
     symbol = plt.Rectangle((index+cpDuration, Yindex), SymbolDuration, SCS, fill=True, color = syColor) 
     ax.add_patch(cp)
@@ -79,7 +58,7 @@ def plotGuardSymbol(ax,printIndex,index,Yindex,cpColor,syColor):
         cpDuration = CpLong
     else: 
         cpDuration = CpNormal
-    print(printIndex,cpDuration)
+    # print(printIndex,cpDuration)
     guardTime = cpDuration + SymbolDuration
     cp = plt.Rectangle((index, Yindex), guardTime, SCS, fill=False)
     # symbol = plt.Rectangle((index+cpDuration, symbolYindex), SymbolDuration, SCS, fill=True, color = syColor) 
@@ -88,7 +67,7 @@ def plotGuardSymbol(ax,printIndex,index,Yindex,cpColor,syColor):
     return index+guardTime
 
 def plot5GSlotAnnotations(ax,startIndex,stopIndex,slotIndexText,slotTypeText):
-    print("Annotation Start:{} Stop:{}".format(startIndex,stopIndex))
+    #print("Annotation Start:{} Stop:{}".format(startIndex,stopIndex))
     arr = patches.FancyArrowPatch((startIndex, SCS+10), (stopIndex, SCS+10),
                                arrowstyle='|-|', mutation_scale=10,
                                shrinkA=0,shrinkB=0
@@ -130,21 +109,21 @@ def plot5GTDD(ax,xaxisOffset,yaxisOffset,bool_plotSlot,bool_ta):
     for subFrameIndex in range(len(SubFramePattern)):
         slotType = SubFramePattern[subFrameIndex]
         SlotStartIndex = printIndex
-        print(slotType,slotNum)
+        # print(slotType,slotNum)
         if slotType == 'D':
             for i in range((pow(2,numerology))):
                 slotStartIndex = printIndex
                 for j in range(symbolsPerSlot): 
-                    print(j,printIndex);printIndex = plotSymbol(ax,j,printIndex,yaxisOffset,'c','b')
+                    printIndex = plotSymbol(ax,j,printIndex,yaxisOffset,'c','b')
                 if(bool_plotSlot):plotSlotAnnotations(ax,"S"+str(i),slotStartIndex,printIndex)
         if slotType == 'U':
             for i in range((pow(2,numerology))):
                 slotStartIndex = printIndex
                 for j in range(symbolsPerSlot): 
-                    print(j,printIndex);printIndex = plotSymbol(ax,j,printIndex,yaxisOffset,'pink','red')
+                    printIndex = plotSymbol(ax,j,printIndex,yaxisOffset,'pink','red')
                 if(bool_plotSlot):plotSlotAnnotations(ax,"S"+str(i),slotStartIndex,printIndex)    
             if bool_ta and subFrameIndex<len(SubFramePattern)-1:
-                print(subFrameIndex,len(SubFramePattern))
+                #print(subFrameIndex,len(SubFramePattern))
                 if (SubFramePattern[subFrameIndex+1] != 'U'): 
                     printIndex += 2*UePropDelay
         if slotType == 'S':
@@ -153,7 +132,7 @@ def plot5GTDD(ax,xaxisOffset,yaxisOffset,bool_plotSlot,bool_ta):
             slotCnt = 0
             appliedTA = False
             for symbol in SpecialSubFramePattern:
-                print(j,printIndex)
+                #print(j,printIndex)
                 if symbol == 'D': cpColor = 'c';syColor = 'b'
                 if symbol == 'U': 
                     if bool_ta and not appliedTA: printIndex -= 2*UePropDelay; appliedTA = True; plotTimingAdvanceAnnotations(ax,printIndex,printIndex+UePropDelay,-5)
@@ -172,7 +151,7 @@ def plot5GTDD(ax,xaxisOffset,yaxisOffset,bool_plotSlot,bool_ta):
         SlotStopIndex = printIndex
         if(bool_plotSlot):plot5GSlotAnnotations(ax,SlotStartIndex,SlotStopIndex,"SF "+str(slotNum),slotType)
         slotNum +=1
-        print(printIndex)
+        #print(printIndex)
 
 def plotPictures(ax,name,x0,x1,y0,y1):
     image = mpimg.imread(name)
@@ -215,6 +194,7 @@ def addLegend(ax):
     return
 
 def main(args):
+
     # RadarPW = args.RadarPW
     # print(RadarPW,args.RadarPW)
     fig = plt.figure(figsize=(25,5)) 
@@ -231,11 +211,14 @@ def main(args):
 
     addLegend(ax)
     print("Showing Plot")
-    plt.show()  
+    
+    plt.show()      
 
 if __name__ == "__main__":
     """ This is executed when run from the command line """
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+    # ... other options ...
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     # Required positional argument
     # parser.add_argument("arg", help="Required positional argument")
@@ -259,7 +242,47 @@ if __name__ == "__main__":
         "--version",
         action="version",
         version="%(prog)s (version {version})".format(version=__version__))
+    
+
+    parser.add_argument('--subFramePattern', type = str, default="DDDSUDDSUU",
+                        help='Slot Frame Pattern Must be 10 char. Down Special Up'
+    )
+    parser.add_argument('--SpecialSubFramePattern',type=str,default='DDDDDDDDGGUUUU',
+                        help='14 Slot pattern for transtion G = Guard.')
+    parser.add_argument('--UeDistance',type=int,default=5e3,
+                        help="UE Distance from gNB in (m)")
+    parser.add_argument('--TA',type=bool,default=True,help="Apply UE Timing Advance")
+    parser.add_argument('--RadarPW',type=int,default=40,help="Radar Pulse Width in uS")
+    parser.add_argument('--RadarPRI',type=int,default=640,help="Radar Pulse Repeition Interval in Hz")
+    parser.add_argument('--RadarOffset',type=int,default=0,help='Radar StartTime Offset')
+
 
     args = parser.parse_args()
+    ### Slots Structures
+    SubFramePattern = args.subFramePattern
+    SpecialSubFramePattern = args.SpecialSubFramePattern
+
+
+    #Slot Len Checks
+    if len(SubFramePattern) != 10: print("SubFramePattern {} ! len=10".format(SubFramePattern));exit()
+    if len(SpecialSubFramePattern) != 14: print("SpecialSubFramePattern {} ! len=14".format(SpecialSubFramePattern));exit()
+
+    #UE
+    UeDistance = args.UeDistance # (m)
+    SpeedOfLight = 299792458 # (m/s)
+    UePropDelay = 1e6 * UeDistance/(SpeedOfLight) # (us)
+    UeTimingAdvance = args.TA
+    plotTaAnnotations = args.TA
+
+    ##Radar
+    RadarPW = args.RadarPW #uS
+    RadarPRI_Hz = args.RadarPRI #Hz
+    RadarPRI_s = (1/RadarPRI_Hz )*1e6
+    RadarOffset = args.RadarOffset #uS
+    print("Using the Following: ")
+    print("Slot Pattern: {} SpecialPattern {}".format(SubFramePattern,SpecialSubFramePattern))
+    print("Ue Distance From gNB {} , PropDelay:{} with TA: {}".format(UeDistance,UePropDelay,UeTimingAdvance))
+    print("Radar PW:{} PRI:{} Offset{}".format(RadarPW,RadarPRI_Hz,RadarOffset))
+    
     main(args)
 
