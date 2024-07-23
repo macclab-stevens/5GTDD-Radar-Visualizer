@@ -163,10 +163,12 @@ def plotPulseRadar(ax,Yindex,RadarHeight,RadarColor):
     print("Graphing Radar Pulses...")
     Index = 0 + RadarOffset
     RadarGraphRange = 10000
-    while Index < RadarGraphRange:
+    while Index <= RadarGraphRange:
         Pulse = plt.Rectangle((Index, Yindex), RadarPW, RadarHeight, fill=True, color = RadarColor) 
         ax.add_patch(Pulse)
-        Index += RadarPW + RadarPRI_s
+        # Index += RadarPW + RadarPRI_s
+        Index += RadarPRI_s
+
         # if Index > RadarGraphRange: return
 
 def addLegend(ax):
@@ -253,7 +255,7 @@ if __name__ == "__main__":
                         help="UE Distance from gNB in (m)")
     parser.add_argument('--TA',type=bool,default=True,help="Apply UE Timing Advance")
     parser.add_argument('--RadarPW',type=int,default=40,help="Radar Pulse Width in uS")
-    parser.add_argument('--RadarPRI',type=int,default=640,help="Radar Pulse Repeition Interval in Hz")
+    parser.add_argument('--RadarPRI',type=int,default=1000,help="Radar Pulse Repeition Interval in Hz")
     parser.add_argument('--RadarOffset',type=int,default=0,help='Radar StartTime Offset')
     parser.add_argument('-f','--fileName',required=False,type=str,help='File to Write PlotOutput')
     parser.add_argument('-i','--noImages',default=True,action='store_false',help='If displaying UE/Tower Images')
