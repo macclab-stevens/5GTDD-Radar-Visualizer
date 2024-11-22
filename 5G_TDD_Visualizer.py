@@ -253,7 +253,7 @@ if __name__ == "__main__":
                         help='14 Slot pattern for transtion G = Guard.')
     parser.add_argument('--UeDistance',type=int,default=5e3,
                         help="UE Distance from gNB in (m)")
-    parser.add_argument('--TA',type=bool,default=True,help="Apply UE Timing Advance")
+    parser.add_argument('--TA',type=bool,default=False,help="Apply UE Timing Advance")
     parser.add_argument('--RadarPW',type=int,default=40,help="Radar Pulse Width in uS")
     parser.add_argument('--RadarPRI',type=int,default=1000,help="Radar Pulse Repeition Interval in Hz")
     parser.add_argument('--RadarOffset',type=int,default=0,help='Radar StartTime Offset')
